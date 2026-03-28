@@ -7,7 +7,9 @@ This project analyzes the relationship between Bitcoin market sentiment (Fear & 
 The goal is to uncover behavioral patterns and generate insights that can improve trading strategies.
 
 ---
-
+## Live Streamlit dashboard
+> [click here for dashboard>>](https://trader-behavior-analysis-3zxmoaijgn8ehpvbnrnksy.streamlit.app/)
+---
 ## 🧠 Key Features
 
 * Data cleaning and preprocessing of real-world datasets
@@ -65,13 +67,14 @@ trader-behavior-analysis/
 ├── notebooks/
               ├── analysis.ipynb -jupyter notebook
               ├── final_ouput.csv -result csv file after data analysis
+├── app.py - streamlit UI dashboard
 ├── README.md -this file
 ├── requirements.txt
 ```
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 ```bash
 pip install -r requirements.txt
