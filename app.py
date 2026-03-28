@@ -6,32 +6,32 @@ st.set_page_config(page_title="Trader Analytics Dashboard", layout="wide")
 
 st.title("📊 Trader Behavior Intelligence Dashboard")
 
-# Load data
+# ---------------- LOAD DATA ----------------
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_csv("notebooks/final_output.csv")
-        return df
+        return pd.read_csv("notebooks/final_output.csv")
     except Exception as e:
-        st.error(f"Error loading data: {e}")
-        return None
+        return None, str(e)
 
-df = load_data()
+data = load_data()
 
-if df is None:
+# Handle error safely
+if isinstance(data, tuple):
+    st.error(f"Error loading data: {data[1]}")
     st.stop()
 
-# ---------------- CLEAN + FIX COLUMNS ----------------
+df = data
+
+# ---------------- CLEAN + FIX ----------------
 df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
-# Fix missing columns
 if 'size_usd' in df.columns:
     df['risk_score'] = df['size_usd']
 
 if 'classification' in df.columns:
     df['sentiment'] = df['classification']
 
-# Create sentiment_score if missing
 if 'sentiment_score' not in df.columns and 'sentiment' in df.columns:
     mapping = {
         "Extreme Fear": 0,
@@ -41,7 +41,6 @@ if 'sentiment_score' not in df.columns and 'sentiment' in df.columns:
     }
     df['sentiment_score'] = df['sentiment'].map(mapping)
 
-# Ensure profit column exists
 if 'profit' not in df.columns and 'closed_pnl' in df.columns:
     df['profit'] = df['closed_pnl'] > 0
 
@@ -49,11 +48,11 @@ if 'profit' not in df.columns and 'closed_pnl' in df.columns:
 st.sidebar.header("Filters")
 
 if 'sentiment' in df.columns:
-    sentiment_options = ["All"] + list(df['sentiment'].dropna().unique())
-    sentiment_filter = st.sidebar.selectbox("Select Sentiment", sentiment_options)
+    options = ["All"] + list(df['sentiment'].dropna().unique())
+    selected = st.sidebar.selectbox("Select Sentiment", options)
 
-    if sentiment_filter != "All":
-        df = df[df['sentiment'] == sentiment_filter]
+    if selected != "All":
+        df = df[df['sentiment'] == selected]
 
 # ---------------- KPIs ----------------
 col1, col2, col3 = st.columns(3)
@@ -70,28 +69,14 @@ if 'profit' in df.columns:
 st.subheader("📈 PnL vs Market Sentiment")
 
 if 'sentiment_score' in df.columns and 'closed_pnl' in df.columns:
-    fig1 = px.box(
-        df,
-        x="sentiment_score",
-        y="closed_pnl",
-        title="PnL vs Market Sentiment"
-    )
+    fig1 = px.box(df, x="sentiment_score", y="closed_pnl")
     st.plotly_chart(fig1, use_container_width=True)
-else:
-    st.warning("Required columns missing for PnL vs Sentiment chart")
 
 st.subheader("📊 Risk vs Return")
 
 if 'risk_score' in df.columns and 'closed_pnl' in df.columns:
-    fig2 = px.scatter(
-        df,
-        x="risk_score",
-        y="closed_pnl",
-        title="Risk vs Return"
-    )
+    fig2 = px.scatter(df, x="risk_score", y="closed_pnl")
     st.plotly_chart(fig2, use_container_width=True)
-else:
-    st.warning("Required columns missing for Risk vs Return chart")
 
 # ---------------- LEADERBOARD ----------------
 if 'account' in df.columns and 'closed_pnl' in df.columns:
