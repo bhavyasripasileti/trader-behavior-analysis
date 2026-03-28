@@ -115,24 +115,16 @@ st.write("Aggregated Data:", agg_df)
 
 # ---------------- CHART ----------------
 # Convert to string (fix axis issue)
-agg_df['sentiment_score'] = agg_df['sentiment_score'].astype(str)
-
 st.subheader("📊 Average PnL by Sentiment")
 
-fig1 = px.bar(
-    agg_df,
-    x='sentiment_score',
-    y='closed_pnl',
-    color='sentiment_score',
-    text_auto=True
-)
+# Convert index to string for display
+simple_df = agg_df.copy()
+simple_df['sentiment_score'] = simple_df['sentiment_score'].astype(str)
 
-# 🔥 FORCE Y-AXIS RANGE (KEY FIX)
-fig1.update_layout(
-    yaxis=dict(range=[0, agg_df['closed_pnl'].max() * 1.5])
-)
+st.write(simple_df)
 
-st.plotly_chart(fig1, use_container_width=True)
+# 🔥 THIS WILL 100% SHOW
+st.bar_chart(simple_df.set_index('sentiment_score')['closed_pnl'])
 
 # ---------------- CHART ----------------
 st.subheader("📈 Risk vs Return")
