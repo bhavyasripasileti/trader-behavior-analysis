@@ -15,6 +15,10 @@ def load_data():
     except Exception as e:
         st.error(f"Error loading data: {e}")
         return None
+df = load_data()
+
+if df is None:
+    st.stop()
 
 # Sidebar
 st.sidebar.header("Filters")
