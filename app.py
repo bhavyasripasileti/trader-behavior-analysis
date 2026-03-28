@@ -10,38 +10,23 @@ st.title("📊 Trader Behavior Intelligence Dashboard")
 @st.cache_data
 def load_data():
     try:
-        return pd.read_csv("notebooks/final_output.csv")
+        df = pd.read_csv("notebooks/final_output.csv")
+        return df
     except Exception as e:
         return None, str(e)
 
 data = load_data()
 
-# Handle error safely
 if isinstance(data, tuple):
     st.error(f"Error loading data: {data[1]}")
     st.stop()
 
 df = data
-# ---------------- FIX NUMERIC DATA ----------------
-# Convert to numeric safely
-df['closed_pnl'] = pd.to_numeric(df['closed_pnl'], errors='coerce')
-df['risk_score'] = pd.to_numeric(df['risk_score'], errors='coerce')
 
-# Drop bad rows
-df = df.dropna(subset=['closed_pnl', 'risk_score'])
-
-# Remove extreme outliers (IMPORTANT)
-df = df[
-    (df['closed_pnl'].abs() < 1e7) &   # remove crazy values
-    (df['risk_score'] < 1e7)
-]
-
-# Optional: scale down for visualization
-df['risk_score'] = df['risk_score'] / 1000
-
-# ---------------- CLEAN + FIX ----------------
+# ---------------- CLEAN COLUMN NAMES FIRST ----------------
 df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
 
+# ---------------- FIX COLUMNS ----------------
 if 'size_usd' in df.columns:
     df['risk_score'] = df['size_usd']
 
@@ -59,6 +44,21 @@ if 'sentiment_score' not in df.columns and 'sentiment' in df.columns:
 
 if 'profit' not in df.columns and 'closed_pnl' in df.columns:
     df['profit'] = df['closed_pnl'] > 0
+
+# ---------------- REDUCE DATA SIZE (VERY IMPORTANT) ----------------
+df = df.sample(min(5000, len(df)))  # prevent freezing
+
+# ---------------- FIX NUMERIC DATA ----------------
+if 'closed_pnl' in df.columns:
+    df['closed_pnl'] = pd.to_numeric(df['closed_pnl'], errors='coerce')
+
+if 'risk_score' in df.columns:
+    df['risk_score'] = pd.to_numeric(df['risk_score'], errors='coerce')
+
+df = df.dropna(subset=['closed_pnl', 'risk_score'])
+
+# Scale for visualization
+df['risk_score'] = df['risk_score'] / 1000
 
 # ---------------- SIDEBAR ----------------
 st.sidebar.header("Filters")
