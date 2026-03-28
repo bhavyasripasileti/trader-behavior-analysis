@@ -99,27 +99,47 @@ df_viz = df_viz.sample(min(3000, len(df_viz)))
 df_viz['closed_pnl_scaled'] = df_viz['closed_pnl'] / 1000
 df_viz['risk_score_scaled'] = df_viz['risk_score'] / 1000
 
-# ---------------- CHARTS ----------------
-st.subheader("📈 PnL vs Market Sentiment")
+# ---------------- AGGREGATED ANALYSIS (FINAL FIX) ----------------
 
-fig1 = px.box(
-    df_viz,
-    x="sentiment_score",
-    y="closed_pnl_scaled",
-    title="PnL Distribution"
+# Clean numeric
+df['closed_pnl'] = pd.to_numeric(df['closed_pnl'], errors='coerce')
+df['risk_score'] = pd.to_numeric(df['risk_score'], errors='coerce')
+
+# Drop NaN
+df_clean = df.dropna(subset=['closed_pnl', 'risk_score', 'sentiment_score'])
+
+# 🔥 AGGREGATE DATA (KEY STEP)
+agg_df = df_clean.groupby('sentiment_score').agg({
+    'closed_pnl': 'mean',
+    'risk_score': 'mean'
+}).reset_index()
+
+# ---------------- CHART 1 ----------------
+st.subheader("📈 Avg PnL vs Market Sentiment")
+
+fig1 = px.bar(
+    agg_df,
+    x='sentiment_score',
+    y='closed_pnl',
+    title="Average PnL by Sentiment",
+    text_auto=True
 )
 st.plotly_chart(fig1, use_container_width=True)
 
-st.subheader("📊 Risk vs Return")
+# ---------------- CHART 2 ----------------
+st.subheader("📊 Avg Risk vs Return")
 
 fig2 = px.scatter(
-    df_viz,
-    x="risk_score_scaled",
-    y="closed_pnl_scaled",
-    opacity=0.5,
-    title="Risk vs Return"
+    agg_df,
+    x='risk_score',
+    y='closed_pnl',
+    size='closed_pnl',
+    color='sentiment_score',
+    title="Risk vs Return (Aggregated)",
+    text='sentiment_score'
 )
 st.plotly_chart(fig2, use_container_width=True)
+
 # ---------------- LEADERBOARD ----------------
 if 'account' in df.columns and 'closed_pnl' in df.columns:
     st.subheader("🏆 Top Traders")
