@@ -22,6 +22,22 @@ if isinstance(data, tuple):
     st.stop()
 
 df = data
+# ---------------- FIX NUMERIC DATA ----------------
+# Convert to numeric safely
+df['closed_pnl'] = pd.to_numeric(df['closed_pnl'], errors='coerce')
+df['risk_score'] = pd.to_numeric(df['risk_score'], errors='coerce')
+
+# Drop bad rows
+df = df.dropna(subset=['closed_pnl', 'risk_score'])
+
+# Remove extreme outliers (IMPORTANT)
+df = df[
+    (df['closed_pnl'].abs() < 1e7) &   # remove crazy values
+    (df['risk_score'] < 1e7)
+]
+
+# Optional: scale down for visualization
+df['risk_score'] = df['risk_score'] / 1000
 
 # ---------------- CLEAN + FIX ----------------
 df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
