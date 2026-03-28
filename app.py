@@ -114,6 +114,9 @@ agg_df = df_clean.groupby('sentiment_score').agg({
 st.write("Aggregated Data:", agg_df)
 
 # ---------------- CHART ----------------
+# Convert to string (fix axis issue)
+agg_df['sentiment_score'] = agg_df['sentiment_score'].astype(str)
+
 st.subheader("📊 Average PnL by Sentiment")
 
 fig1 = px.bar(
@@ -123,6 +126,12 @@ fig1 = px.bar(
     color='sentiment_score',
     text_auto=True
 )
+
+# 🔥 FORCE Y-AXIS RANGE (KEY FIX)
+fig1.update_layout(
+    yaxis=dict(range=[0, agg_df['closed_pnl'].max() * 1.5])
+)
+
 st.plotly_chart(fig1, use_container_width=True)
 
 # ---------------- CHART ----------------
