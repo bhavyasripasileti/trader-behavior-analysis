@@ -60,8 +60,12 @@ The goal is to uncover behavioral patterns and generate insights that can improv
 trader-behavior-analysis/
 │
 ├── data/
+          ├── sentiment.csv
+          ├── trades.csv
 ├── notebooks/
-├── app/
+              ├── analysis.ipynb -jupyter notebook
+              ├── final_ouput.csv -result csv file after data analysis
+├── README.md -this file
 ├── requirements.txt
 ```
 
@@ -84,3 +88,4 @@ notebooks/analysis.ipynb
 ## 👤 Author
 
 Bhavya Sri Pasileti
+> Data Science & AI/ML Enthusiast
