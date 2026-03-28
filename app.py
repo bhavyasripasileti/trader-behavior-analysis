@@ -9,7 +9,7 @@ st.title("📊 Trader Behavior Intelligence Dashboard")
 # Load data
 @st.cache_data
 def load_data():
-    return pd.read_csv("../notebooks/final_output.csv")
+    return pd.read_csv("notebooks/final_output.csv")
 
 df = load_data()
 
