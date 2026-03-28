@@ -113,7 +113,7 @@ agg_df = df_clean.groupby('sentiment_score').agg({
 
 st.write("Aggregated Data:", agg_df)
 
-# ---------------- CHART ----------------
+# ---------------- CHART 1 ----------------
 # Convert to string (fix axis issue)
 st.subheader("📊 Average PnL by Sentiment")
 
@@ -126,17 +126,27 @@ st.write(simple_df)
 # 🔥 THIS WILL 100% SHOW
 st.bar_chart(simple_df.set_index('sentiment_score')['closed_pnl'])
 
-# ---------------- CHART ----------------
-st.subheader("📈 Risk vs Return")
+# ---------------- CHART 2 ----------------
+st.subheader("📈 Risk vs Return by Sentiment")
 
-fig2 = px.scatter(
-    agg_df,
-    x='risk_score',
-    y='closed_pnl',
-    color='sentiment_score',
-    size='closed_pnl'
+# Prepare clean data
+risk_return_df = agg_df.copy()
+risk_return_df['sentiment_score'] = risk_return_df['sentiment_score'].astype(str)
+
+# Rename for better understanding
+risk_return_df.rename(columns={
+    'closed_pnl': 'avg_return',
+    'risk_score': 'avg_risk'
+}, inplace=True)
+
+st.write(risk_return_df)
+
+# 🔥 SCATTER PLOT (simple + visible)
+st.scatter_chart(
+    data=risk_return_df,
+    x='avg_risk',
+    y='avg_return'
 )
-st.plotly_chart(fig2, use_container_width=True)
 
 
 # ---------------- LEADERBOARD ----------------
