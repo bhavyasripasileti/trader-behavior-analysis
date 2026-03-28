@@ -80,7 +80,11 @@ if 'closed_pnl' in df.columns:
 
 if 'profit' in df.columns:
     col3.metric("Win Rate", f"{df['profit'].mean()*100:.2f}%")
-
+#-------------------------------------
+st.write("Columns:", df.columns.tolist())
+st.write("Sample Data:")
+st.dataframe(df.head())
+#-------------------------------------
 # ---------------- CHARTS ----------------
 st.subheader("📈 PnL vs Market Sentiment")
 
