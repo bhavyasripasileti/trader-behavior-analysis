@@ -80,23 +80,45 @@ if 'closed_pnl' in df.columns:
 
 if 'profit' in df.columns:
     col3.metric("Win Rate", f"{df['profit'].mean()*100:.2f}%")
-#-------------------------------------
-st.write("Columns:", df.columns.tolist())
-st.write("Sample Data:")
-st.dataframe(df.head())
-#-------------------------------------
+
+
+# ---------------- BETTER VISUALIZATION ----------------
+
+# Remove zero pnl (important)
+df_viz = df[df['closed_pnl'] != 0].copy()
+
+# If still empty, fallback
+if len(df_viz) < 50:
+    df_viz = df.copy()
+
+# Log transform (THIS IS THE KEY FIX)
+df_viz['closed_pnl_log'] = df_viz['closed_pnl'].apply(
+    lambda x: 0 if x == 0 else (abs(x))**0.5 * (1 if x > 0 else -1)
+)
+
+df_viz['risk_score_log'] = df_viz['risk_score']**0.5
+
 # ---------------- CHARTS ----------------
 st.subheader("📈 PnL vs Market Sentiment")
 
-if 'sentiment_score' in df.columns and 'closed_pnl' in df.columns:
-    fig1 = px.box(df, x="sentiment_score", y="closed_pnl")
-    st.plotly_chart(fig1, use_container_width=True)
+fig1 = px.box(
+    df_viz,
+    x="sentiment_score",
+    y="closed_pnl_log",
+    title="PnL Distribution (Transformed)"
+)
+st.plotly_chart(fig1, use_container_width=True)
 
 st.subheader("📊 Risk vs Return")
 
-if 'risk_score' in df.columns and 'closed_pnl' in df.columns:
-    fig2 = px.scatter(df, x="risk_score", y="closed_pnl")
-    st.plotly_chart(fig2, use_container_width=True)
+fig2 = px.scatter(
+    df_viz,
+    x="risk_score_log",
+    y="closed_pnl_log",
+    opacity=0.6,
+    title="Risk vs Return (Transformed)"
+)
+st.plotly_chart(fig2, use_container_width=True)
 
 # ---------------- LEADERBOARD ----------------
 if 'account' in df.columns and 'closed_pnl' in df.columns:
